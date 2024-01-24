@@ -1,0 +1,95 @@
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/clock/qcom,gcc-kona.h>
+#include <dt-bindings/clock/qcom,camcc-kona.h>
+#include <dt-bindings/clock/qcom,rpmh.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+#include "hollywood.dtsi"
+#include "hollywood-evt.dtsi"
+
+/ {
+	model = "Hollywood (PVT-B)";
+	compatible = "qcom,kona";
+	qcom,board-id = <64 18>;
+};
+
+&pm8150_adc_tm {
+	io-channels = <&pm8150_vadc ADC_XO_THERM_PU2>,
+			<&pm8150_vadc ADC_AMUX_THM1_PU2>,
+			<&pm8150_vadc ADC_AMUX_THM2_PU2>,
+			<&pm8150_vadc ADC_GPIO1_PU2>;
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&pm_gpio_adc_default>;
+
+	usbc-therm@12 {
+		reg = <ADC_GPIO1_PU2>;
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+	};
+};
+
+&pm8150_gpios {
+	pm8150_adc_therm {
+		pm_gpio_adc_default: pm_gpio_adc_default {
+			pins = "gpio3";
+			function = "normal";
+			bias-high-impedance;
+		};
+	};
+};
+
+&pm8150_vadc {
+	usbc-therm@52 {
+		reg = <ADC_GPIO1_PU2>;
+		label = "usbc_therm";
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+		qcom,pre-scaling = <1 1>;
+	};
+};
+
+&thermal_zones {
+	usbc-charger {
+		polling-delay-passive = <0>;
+		polling-delay = <0>;
+		thermal-governor = "step_wise";
+		thermal-sensors = <&pm8150_adc_tm ADC_GPIO1_PU2>;
+		trips {
+			usbc_trip_reduce_charging: usbc_trip_reduce_charging {
+				temperature = <53000>;
+				hysteresis = <1000>;
+				type = "passive";
+			};
+			usbc_trip_suspend_charging: usbc_trip_suspend_charging {
+				temperature = <55000>;
+				hysteresis = <1000>;
+				type = "passive";
+			};
+		};
+		cooling-maps {
+			usbc_map_reduce_charging: usbc_map_reduce_charging {
+				trip = <&usbc_trip_reduce_charging>;
+				cooling-device = <&charging_thermal_controller_usbc 1 1>;
+			};
+			usbc_map_suspend_charging: usbc_map_suspend_charging {
+				trip = <&usbc_trip_suspend_charging>;
+				cooling-device = <&charging_thermal_controller_usbc 2 2>;
+			};
+		};
+	};
+};
+
+&vendor {
+	charging_thermal_controller_usbc: oculus,charging_thermal_controller_usbc {
+		status = "ok";
+		compatible = "oculus,charging-thermal-controller";
+		votable = "USB_ICL";
+		reduce-vote = <720000>;
+		suspend-vote = <0>;
+		cdev-name = "usbc-cdev";
+		#cooling-cells = <2>;
+	};
+};

@@ -1,0 +1,468 @@
+#include "seacliff-dsi-panel-boe-spi-blu-dsc-90Hz-video.dtsi"
+
+&display_panel_avdd {
+	status = "disabled";
+};
+
+&dsi_dual_boe_90hz_dsc {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_lab_ibb>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_local_dimming";
+	qcom,mdss-dsi-bl-min-level = <0>;
+	qcom,mdss-dsi-bl-max-level = <255>;
+	qcom,mdss-brightness-max-level = <255>;
+	qcom,platform-en-gpio = <&tlmm 23 0>;
+	qcom,platform-reset-gpio = <&tlmm 101 0>;
+	qcom,panel-sec-reset-gpio = <&tlmm 57 0>;
+	qcom,mdss-dsi-reset-off-delay = <30>;
+	qcom,mdss-dsi-sec-reset-off-delay = <30>;
+	qcom,dsi-select-clocks =
+		"mux_byte_clk0", "mux_pixel_clk0",
+		"cphy_byte_clk0", "cphy_pixel_clk0";
+	oculus,backlight = <&blu_left &blu_right>;
+
+	oculus,temperature-dependent-backlight;
+	oculus,response-time-curve =
+		<10000 8600>, <25000 5500>, <45000 4000>, <55000 3500>;
+	io-channels = <&pm8150b_vadc ADC_AMUX_THM4_PU2>;
+
+	qcom,mdss-dsi-display-timings {
+		timing@0{
+			qcom,display-topology = <4 4 2>;
+			qcom,default-topology-index = <0>;
+		};
+	};
+};
+
+&dsi_panel_pwr_supply_lab_ibb {
+	qcom,panel-supply-entry@0 {
+		reg = <0>;
+		qcom,supply-name = "vddio";
+		qcom,supply-min-voltage = <1800000>;
+		qcom,supply-max-voltage = <1800000>;
+		qcom,supply-enable-load = <62000>;
+		qcom,supply-disable-load = <80>;
+		qcom,supply-post-on-sleep = <20>;
+		qcom,supply-pre-off-sleep = <35>;
+	};
+
+	qcom,panel-supply-entry@1 {
+		reg = <1>;
+		qcom,supply-name = "lab";
+		qcom,supply-min-voltage = <5600000>;
+		qcom,supply-max-voltage = <6000000>;
+		qcom,supply-enable-load = <100000>;
+		qcom,supply-disable-load = <100>;
+	};
+
+	qcom,panel-supply-entry@2 {
+		reg = <2>;
+		qcom,supply-name = "ibb";
+		qcom,supply-min-voltage = <5600000>;
+		qcom,supply-max-voltage = <6000000>;
+		qcom,supply-enable-load = <100000>;
+		qcom,supply-disable-load = <100>;
+		qcom,supply-post-on-sleep = <20>;
+	};
+
+	qcom,panel-supply-entry@3 {
+		reg = <3>;
+		qcom,supply-name = "blu-mcu";
+		qcom,supply-min-voltage = <3120000>;
+		qcom,supply-max-voltage = <3120000>;
+		qcom,supply-enable-load = <857000>;
+		qcom,supply-disable-load = <0>;
+		qcom,supply-post-on-sleep = <0>;
+	};
+
+	qcom,panel-supply-entry@4 {
+		reg = <4>;
+		qcom,supply-name = "blu-pvdd";
+		qcom,supply-min-voltage = <1800000>;
+		qcom,supply-max-voltage = <1800000>;
+		qcom,supply-enable-load = <62000>;
+		qcom,supply-disable-load = <0>;
+		qcom,supply-pre-on-sleep = <0>;
+	};
+
+	qcom,panel-supply-entry@5 {
+		reg = <5>;
+		qcom,supply-name = "blu-spi";
+		qcom,supply-min-voltage = <1800000>;
+		qcom,supply-max-voltage = <1800000>;
+		qcom,supply-enable-load = <62000>;
+		qcom,supply-disable-load = <0>;
+		qcom,supply-pre-on-sleep = <10>;
+	};
+};
+
+&pm8150a_amoled {
+	status = "disabled";
+};
+
+&L11C {
+	qcom,init-voltage = <3300000>;
+};
+
+&L14A {
+	regulator-max-microvolt = <1900000>;
+	qcom,init-mode = <4>; /* RPMH_REGULATOR_MODE_HPM */
+	qcom,init-voltage = <1900000>;
+};
+
+&pm8150l_lcdb {
+	status = "ok";
+	qcom,pwrdn-delay-ms = <8>;
+	qcom,pwrup-delay-ms = <4>;
+	qcom,pfm-peak-auto-adj-disabled;
+};
+
+&lcdb_bst_vreg {
+	qcom,bst-ilim-ma = <600>;
+};
+
+&lcdb_ldo_vreg {
+	regulator-min-microvolt = <6000000>;
+	regulator-max-microvolt = <6000000>;
+	qcom,ldo-ilim-ma = <460>;
+};
+
+&lcdb_ncp_vreg {
+	regulator-min-microvolt = <6000000>;
+	regulator-max-microvolt = <6000000>;
+	qcom,ncp-ilim-ma = <810>;
+};
+
+&mdss_dsi_phy0 {
+	qcom,platform-phy-drive-strength = <0x0F4 0x1F
+		0x0F8 0x1F
+		0x0FC 0x1F
+		0x020 0x50
+		0x110 0x55>;
+};
+
+&mdss_dsi_phy1 {
+	qcom,platform-phy-drive-strength = <0x0F4 0x1F
+		0x0F8 0x1F
+		0x0FC 0x1F
+		0x020 0x50
+		0x110 0x55>;
+};
+
+&mdss_mdp {
+	/* set mdp clk rate to max for TJ3 panels */
+	clock-rate = <0 0 0 0 460000000 19200000 460000000 19200000>;
+	qcom,sde-has-dest-scaler;
+	qcom,sde-wb-rtprio = <99>;
+	qcom,sde-wb-cpumask = "80"; /* CPU7 */
+	qcom,sde-lineptr-scanline-advance = <1070>;
+	qcom,sde-wb-mild-tear-threshold = <980>;
+	qcom,sde-wb-severe-tear-threshold = <890>;
+	qcom,sde-wb-passes = <1>;
+};
+
+&qupv3_se2_spi {
+	status = "ok";
+	qcom,rt;
+
+	blu_left: blu_left@0 {
+		compatible = "oculus,seacliff-blu-spi";
+		reg = <0x00>;
+		spi-max-frequency = <8000000>;
+		oculus,blu-corner-zones = <0 1 2 3 4 5 6 7 8 9 10 11 12 13 56 57
+			60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 76 136 140 141 142
+			433 434 435 439 499 501 502 503 504 505 506 507 508 509 510 511
+			512 513 514 515 518 519 562 563 564 565 566 567 568 569 570 571
+			572 573 574 575>;
+		oculus,blu-rolloff-comp = [01 02 40 00 C2
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+		];
+		oculus,blu-init-matrix = [21 04 80 07 00
+			00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			00 00 00 00 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 00 00 00 00 0A 54 0A 54
+			00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			00 00 00 00 00 00 0A 54 00 00 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 00 00 0A 54 0A 54 0A 54 00 00 00 00 00 00 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 55 0A 54 0A 54 0A 54
+			0A 54 00 00 00 00 00 00 0A 54 0A 54 0A 54 00 00 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 00 00 0A 54 00 00 00 00 00 00
+			00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			0A 54 0A 54 00 00 00 00 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 00 00 00 00
+			00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			01
+		];
+		oculus,blu-irq-gpio = <&tlmm 111 0>;
+		oculus,blu-name = "seacliff-left-blu";
+		oculus,continuous-splash;
+	};
+};
+
+&qupv3_se14_spi {
+	status = "ok";
+	qcom,rt;
+
+	blu_right: blu_right@0 {
+		compatible = "oculus,seacliff-blu-spi";
+		reg = <0x00>;
+		spi-max-frequency = <8000000>;
+		oculus,blu-corner-zones = <0 1 2 3 4 5 6 7 8 9 10 11 12 13 56 57
+			60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 76 136 140 141 142
+			433 434 435 439 499 501 502 503 504 505 506 507 508 509 510 511
+			512 513 514 515 518 519 562 563 564 565 566 567 568 569 570 571
+			572 573 574 575>;
+		oculus,blu-rolloff-comp = [01 02 40 00 C2
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+			80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80
+		];
+		oculus,blu-init-matrix = [21 04 80 07 00
+			00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			00 00 00 00 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 00 00 00 00 0A 54 0A 54
+			00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			00 00 00 00 00 00 0A 54 00 00 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 00 00 0A 54 0A 54 0A 54 00 00 00 00 00 00 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 55 0A 54 0A 54 0A 54
+			0A 54 00 00 00 00 00 00 0A 54 0A 54 0A 54 00 00 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 00 00 0A 54 00 00 00 00 00 00
+			00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			0A 54 0A 54 00 00 00 00 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54
+			0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 0A 54 00 00 00 00
+			00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			01
+		];
+		oculus,blu-irq-gpio = <&tlmm 59 0>;
+		oculus,blu-name = "seacliff-right-blu";
+		oculus,continuous-splash;
+	};
+};
+
+&sde_dsi {
+	clocks = <&mdss_dsi0_pll BYTECLK_MUX_0_CLK>,
+		 <&mdss_dsi0_pll PCLK_MUX_0_CLK>,
+		 <&mdss_dsi0_pll BYTECLK_SRC_0_CLK>,
+		 <&mdss_dsi0_pll PCLK_SRC_0_CLK>,
+		 <&mdss_dsi0_pll CPHY_BYTECLK_SRC_0_CLK>,
+		 <&mdss_dsi0_pll CPHY_PCLK_SRC_0_CLK>,
+		 <&mdss_dsi0_pll SHADOW_BYTECLK_SRC_0_CLK>,
+		 <&mdss_dsi0_pll SHADOW_PCLK_SRC_0_CLK>,
+		 <&mdss_dsi1_pll BYTECLK_MUX_1_CLK>,
+		 <&mdss_dsi1_pll PCLK_MUX_1_CLK>,
+		 <&mdss_dsi1_pll BYTECLK_SRC_1_CLK>,
+		 <&mdss_dsi1_pll PCLK_SRC_1_CLK>,
+		 <&mdss_dsi1_pll CPHY_BYTECLK_SRC_1_CLK>,
+		 <&mdss_dsi1_pll CPHY_PCLK_SRC_1_CLK>,
+		 <&mdss_dsi1_pll SHADOW_BYTECLK_SRC_1_CLK>,
+		 <&mdss_dsi1_pll SHADOW_PCLK_SRC_1_CLK>;
+
+	clock-names = "mux_byte_clk0", "mux_pixel_clk0",
+			"src_byte_clk0", "src_pixel_clk0",
+			"cphy_byte_clk0", "cphy_pixel_clk0",
+			"shadow_byte_clk0", "shadow_pixel_clk0",
+			"mux_byte_clk1", "mux_pixel_clk1",
+			"src_byte_clk1", "src_pixel_clk1",
+			"cphy_byte_clk1", "cphy_pixel_clk1",
+			"shadow_byte_clk1", "shadow_pixel_clk1";
+
+	lab-supply = <&lcdb_ldo_vreg>;
+	ibb-supply = <&lcdb_ncp_vreg>;
+	avdd-supply = <>;
+	blu-mcu-supply = <&L11C>;
+	blu-pvdd-supply = <&display_panel_blu_pvdd_en>;
+	blu-spi-supply = <&display_panel_blu_en>;
+	qcom,dsi-default-panel = <&dsi_dual_boe_90hz_dsc>;
+	pinctrl-0 = <>;
+	pinctrl-1 = <>;
+};
+
+&sde_dsi1 {
+	clocks = <&mdss_dsi0_pll BYTECLK_MUX_0_CLK>,
+		 <&mdss_dsi0_pll PCLK_MUX_0_CLK>,
+		 <&mdss_dsi0_pll CPHY_BYTECLK_SRC_0_CLK>,
+		 <&mdss_dsi0_pll CPHY_PCLK_SRC_0_CLK>,
+		 <&mdss_dsi1_pll BYTECLK_MUX_1_CLK>,
+		 <&mdss_dsi1_pll PCLK_MUX_1_CLK>,
+		 <&mdss_dsi1_pll CPHY_BYTECLK_SRC_1_CLK>,
+		 <&mdss_dsi1_pll CPHY_PCLK_SRC_1_CLK>;
+	clock-names = "mux_byte_clk0", "mux_pixel_clk0",
+		      "cphy_byte_clk0", "cphy_pixel_clk0",
+		      "mux_byte_clk1", "mux_pixel_clk1",
+		      "cphy_byte_clk1", "cphy_pixel_clk1";
+
+	avdd-supply = <>;
+	pinctrl-0 = <>;
+	pinctrl-1 = <>;
+};
+
+&soc {
+	display_panel_blu_pvdd_en: blu_gpio_regulator@0 {
+		compatible = "regulator-fixed";
+		regulator-name = "display_panel_blu_pvdd_en";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-enable-ramp-delay = <233>;
+		gpio = <&tlmm 88 0>;
+		enable-active-high;
+		regulator-boot-on;
+		pinctrl-names = "default";
+		pinctrl-0 = <&seacliff_blu_pvdd_en_default>;
+	};
+
+	display_panel_blu_en: blu_gpio_regulator@1 {
+		compatible = "regulator-fixed";
+		regulator-name = "display_panel_blu_en";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-enable-ramp-delay = <233>;
+		gpio = <&tlmm 91 0>;
+		enable-active-high;
+		regulator-boot-on;
+		pinctrl-names = "default";
+		pinctrl-0 = <&display_panel_blu_en_default>;
+	};
+};
+
+&tlmm {
+	display_panel_blu_en_default: display_panel_blu_en_default {
+		mux {
+			pins = "gpio91";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio91";
+			drive-strength = <8>;
+			bias-disable = <0>;
+			output-high;
+		};
+	};
+
+	seacliff_blu_pvdd_en_default: seacliff_blu_pvdd_en_default {
+		mux {
+			pins = "gpio88";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio88";
+			drive-strength = <8>;
+			bias-disable = <0>;
+			output-high;
+		};
+	};
+};

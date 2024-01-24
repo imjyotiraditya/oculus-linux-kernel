@@ -74,7 +74,6 @@ struct lpm_debug {
 
 static struct system_pm_ops *sys_pm_ops;
 
-
 struct lpm_cluster *lpm_root_node;
 
 #define MAXSAMPLES 5
@@ -655,7 +654,7 @@ static inline bool lpm_disallowed(s64 sleep_us, int cpu, struct lpm_cpu *pm_cpu)
 	if (cpu_isolated(cpu))
 		goto out;
 
-	if (sleep_disabled)
+	if (cpumask_test_cpu(cpu, &pm_cpu->disallowed_cpus) || sleep_disabled)
 		return true;
 
 	bias_time = sched_lpm_disallowed_time(cpu);
@@ -1745,8 +1744,12 @@ static int lpm_suspend_enter(suspend_state_t state)
 	 * which resources are enabled and preventing the system level
 	 * LPMs (XO and Vmin).
 	 */
+#ifdef CONFIG_COMMON_CLK_DEBUG
 	clock_debug_print_enabled();
+#endif
+#ifdef CONFIG_REGULATOR_DEBUG
 	regulator_debug_print_enabled();
+#endif
 
 	cpu_prepare(lpm_cpu, idx, false);
 	cluster_prepare(cluster, cpumask, idx, false, 0);

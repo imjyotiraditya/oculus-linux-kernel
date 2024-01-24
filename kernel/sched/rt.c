@@ -16,6 +16,12 @@
 int sched_rr_timeslice = RR_TIMESLICE;
 int sysctl_sched_rr_timeslice = (MSEC_PER_SEC / HZ) * RR_TIMESLICE;
 
+/* RT task will try to wake up on an idle CPU if set to 1 */
+unsigned int sysctl_sched_rt_wakeup_on_idle __read_mostly;
+
+/* RT task will try to preempt the globally lowest-priority task if set to 1 */
+unsigned int sysctl_sched_rt_preempt_lowest __read_mostly;
+
 static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun);
 
 struct rt_bandwidth def_rt_bandwidth;
@@ -1527,6 +1533,10 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags,
 	 * around just because it gave up its CPU, perhaps for a
 	 * lock?
 	 *
+	 * However, with sysctl_sched_rt_preempt_lowest flag, we will
+	 * allow the higher task to bounce to keep lower prio RT task
+	 * running on this CPU (and keeping its cache).
+	 *
 	 * For equal prio tasks, we just let the scheduler sort it out.
 	 *
 	 * Otherwise, just let it ride on the affined RQ and the
@@ -1539,7 +1549,8 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags,
 	if (static_branch_unlikely(&sched_energy_present) || may_not_preempt ||
 	    (unlikely(rt_task(curr)) &&
 	     (curr->nr_cpus_allowed < 2 ||
-	      curr->prio <= p->prio))) {
+	      curr->prio <= p->prio ||
+	      unlikely(sysctl_sched_rt_preempt_lowest)))) {
 		int target = find_lowest_rq(p);
 
 		/*
@@ -1552,7 +1563,34 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags,
 		   (may_not_preempt ||
 		    p->prio < cpu_rq(target)->rt.highest_prio.curr))
 			cpu = target;
+	} else if (unlikely(sysctl_sched_rt_wakeup_on_idle) &&
+			!is_idle_task(curr) && !(p->flags & PF_KTHREAD)) {
+		/* Current CPU is running a non-kthread. Try to find an idle CPU */
+		int i;
+		struct task_struct *tsk;
+		struct sched_domain *sd;
+		cpumask_t cpus;
+
+		for_each_domain(cpu, sd) {
+			if (sd->flags & SD_WAKE_AFFINE)
+				cpumask_and(&cpus, sched_domain_span(sd), &p->cpus_allowed);
+			else
+				cpumask_copy(&cpus, &p->cpus_allowed);
+
+			/* Symmetricly migrate so no CPU is overloaded */
+			for_each_cpu_wrap(i, &cpus, cpu) {
+				if (i != cpu) {
+					rq = cpu_rq(i);
+					tsk = READ_ONCE(rq->curr);
+					if (is_idle_task(tsk)) {
+						cpu = i;
+						goto done;
+					}
+				}
+			}
+		}
 	}
+done:
 	rcu_read_unlock();
 
 out:
